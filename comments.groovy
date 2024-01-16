@@ -30,5 +30,5 @@ class Foo {
 
   }
 }
-assert Foo.class.groovydoc.content.contains('另外')
+assert Foo.class.groovydoc.content.contains('Some')
 assert Foo.class.getMethod('bar',new Class[0]).groovydoc.content.contains('method')
