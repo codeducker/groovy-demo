@@ -70,6 +70,16 @@ println("hello $name")
 
 println(" ${a = 1; b =2; a+b;}")
 
+message = '''
+this is a test name ${name}'''
+println message
+assert message.startsWith('\n')
+
+newline = '''\
+match line
+'''
+assert !newline.startsWith('\n')
+
 //def number = 3.14
 String thing = 'treasure'
 //assert 'The x-coordinate of the treasure is represented by treasure.x' ==
