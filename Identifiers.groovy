@@ -1,3 +1,6 @@
+
+import static groovy.test.GroovyAssert.shouldFail
+
 class Foo {}
 def foo = new Foo()
 
@@ -26,6 +29,12 @@ assert map.'Simpson-Homer' == "Homer Simpson"
 
 def a = 's'
 assert 'ab' == 'a'+'b'
+
+def july = "${def ai=1;def bi = 2 ; ai+bi}"
+println july
+
+def person_wor = [name:"guile",age:38]
+assert "$person_wor.name is $person_wor.age" == "guile is 38"
 
 print("\n")
 
@@ -87,6 +96,11 @@ String thing = 'treasure'
 assert 'The x-coordinate of the treasure is represented by treasure.x' ==
         "The x-coordinate of the $thing is represented by ${thing}.x"  // <= Curly braces required
 
+
+def sParam = "1+2 == ${->3}"
+assert sParam == "1+2 == 3"
+
+
 println("1+2 == ${w-> w << 3}")
 
 
@@ -100,7 +114,7 @@ assert lazyGString ==  "value == 1"
 
 number = 2
 assert eagerGString == "value == 1"
-assert lazyGString ==  "value == 2"
+assert lazyGString ==  "value == 2" //上述 lazyGString为闭包表达式,所以要代入值进行替换,而GStirng在字符串创建时就已经替换完成
 
 assert  lazyGStringSingle == lazyGString
 
@@ -110,16 +124,30 @@ static String takeString(String message){
     return message
 }
 
+def lastmess = "the world is ${lazyGStringSingle}"
+assert lastmess instanceof GString
+def result_low = takeString(lastmess)
+assert result_low instanceof String
+assert result_low == "the world is value == 2"
+
+
+
 def th = "lastmesh ${1+2}"
 def last = takeString(th)
 println(last)
 
 assert "one: ${1}".hashCode() != "one: 1".hashCode()
 
+def number_low = 4.12
+//此时编译器会认为此表达式等价于 ${number_low.toString}() 所以报错
+shouldFail(groovy.lang.MissingPropertyException){
+  assert "$number_low.toString()" == "4.12"
+}
 
 def key = "a"
 def m = ["${key}": "letter ${key}"]
-
+println(m)
+//这里因为虽然m存在 key = a 的键值 但是由于hashcode不一致所以下述取值也就显示为空了
 assert m["a"] == null
 
 def ne = 'Groovy'
@@ -135,9 +163,11 @@ def template = """
 
 assert template.toString().contains('Groovy')
 
-
 def pt = /.*/
 assert pt == '.*'
+
+
+ //assert '' == //这里groovy会认为//为注释 
 
 def multiline = /one
     two
@@ -182,3 +212,12 @@ assert [
         '$/ escaped opening dollar slashy',
         '/$ escaped closing dollar slashy'
 ].every { dollarSlash.contains(it) }
+
+char a1  = 'A'
+assert a1 instanceof Character
+
+def a2 = 'B' as char 
+assert a2 instanceof Character
+
+def a3 = (char)'C'
+assert a3 instanceof Character

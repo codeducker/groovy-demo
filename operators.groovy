@@ -2,6 +2,36 @@
 
 
 import java.util.regex.Matcher
+
+assert 1 +2 == 3 
+assert 4 -1 ==3 
+assert 3 * 4 == 12 
+assert 4 / 2 == 2 
+assert 4 % 2 == 0 
+assert 3 ** 3 == 27 
+
+assert +3 ==  3 
+assert -3 == 0-3
+assert -(-3) == 3 
+
+
+def a1 = 2 
+def b1 = a1++ * 3 
+assert a1 == 3 && b1 == 6 
+
+
+def a2  = 3 
+def b2 = ++a2 * 3 
+assert a2 == 4 && b2 ==12
+
+
+def ac = 4 
+ac += 2 
+println(ac)
+
+
+
+
 //pattern = /he/
 //
 //def reg = ~/p/
@@ -289,6 +319,6 @@ class Bnu {
         return new Bnu(this.size + other.size)
     }
 }
-def b1 = new Bnu(1)
-def b2 = new Bnu(2)
-println(( b1 + b2 ).size)
+def bnu1 = new Bnu(1)
+def bnu2 = new Bnu(2)
+println(( bnu1 + bnu2 ).size)

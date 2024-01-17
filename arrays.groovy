@@ -24,3 +24,7 @@ def stValues = ["hello", " o ", "world"] as String[]
 assert  stValues.sum() == "hello o world"
 
 assert stValues.every({it.contains("o")})
+
+def int_arr = [1,2,3] as int[]
+assert !( int_arr instanceof List )
+assert int_arr instanceof int[]

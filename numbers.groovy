@@ -44,3 +44,14 @@ println(ai.intdiv(bc))
 
 
 println((0.5 ** -0.3f) instanceof Double)
+
+
+ //BigDecimal / BigInteger G / g
+ //Long L / l 
+ //Integer I / i 
+ // Double D / d 
+ // Float F / f 
+assert 0.12D.class == Double.class
+
+
+assert 2 ** 3 instanceof Integer
