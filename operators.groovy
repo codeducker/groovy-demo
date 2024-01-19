@@ -291,16 +291,20 @@ assert range.collect() == [1,2,3,4]
 assert range instanceof List
 assert range.size() == 4
 
+assert ('a'..'d') == ['a','b','c','d']
 
+//三路比较运算符
+assert (1 <=> 1) == 0 
+assert ('a' <=> 'z') == -1
 
+//下标运算符
+def arrList = [1,2,3,4,5,6]
+assert arrList[0] == 1 
+arrList[6] = 7
+assert arrList[6] == 7 
+assert arrList[0..2] == [1,2,3]
 
-//println(1 <=> 2)
-
-//def list = [1,3]
-//list[1] = 3 //下标 0 开始
-//list[2..4] = [6,7,8]
-//println(list)
-
+//当自定义对象未定义 getAt / putAt方法时 是无法通过 对象实例[下标]
 class User {
    Long id
    String name
@@ -320,72 +324,100 @@ class User {
    }
 }
 def user1 = new User(id: 1, name: 'Alex')
-assert user1[0] == 1
+assert user1[0] == 1 //此时 调用对象getAt方法
 assert user1[1] == 'Alex'
-user1[1] = 'Bob'
+user1[1] = 'Bob' //此时调用对象 putAt方法
 
-user = null
-def name2 = user?.name
-// assert  user.get()
-assert name2 == null
+//安全下标操作符
+String[] array  = ['a','b']
+assert 'b' == array?[1]
+array = null
+assert null == array?[0] //此时会发现arraay对象为空,所以对应取值或者赋值操作都是被忽略
+array?[1] = 'c'
 
+//同样适用于map
+def personinfo = [name:"lucky","location":"shanghai"]
+assert personinfo?['name'] == 'lucky'
+personinfo = null
+assert null == personinfo?['name']
 
-//def list = [1,3]
-//println(list?[1])
-//println(list?[4])
-
-//
-//array = null
-//assert null == array?[1]     // return null for all index values
-//array?[1] = 'c'              // quietly ignore attempt to set value
-//assert null == array?[1]
-
-//def list = [1,3,40]
-//println(list.isCase(1))
 
 def list1 = ['Groovy 1.8','Groovy 2.0','Groovy 2.3']
 def list2 = ['Groovy 1.8','Groovy 2.0','Groovy 2.3']
-assert list1 == list2
-assert !list1.is(list2)
+//这里 in 相当于 list.contains() / list.isCase() 方法
+assert ( "Groovy 1.8" in list1 )
+
+assert list1 == list2 // 相当于equals方法
+assert !list1.is(list2)// is 比较对象引用 
 assert list1 !== list2
-//String a = "1ab"
-//int b = a as int
-//println(
-//        b
-//)
-//
-//class Identifiable {
-//    String name
-//}
-//
-//class User {
-//    Long id
-//    String name
-//
-//    def asType(Class target){
-//        if ( target == Identifiable ){
-//            return new Identifiable(name:name)
-//        }else{
-//            return null
-//        }
-//    }
-//
-//    def call(){
-//        id +=23
-//    }
 
-//}
-//def u = new User(id:1,name:"li")
-//def p = u  as Identifiable
-//println(p)
-//
-//
-//def user = new User(id: 1)
-//user.call()
-//println(user.id)
-//user()
-//println(user.id)
+String input = '42'
+ // def num = (Integer) input // 此时会抛出异常  
+def num = input as Integer
+assert num instanceof Integer
 
+//若是对象 也需要进行 as 强转 才是要在类中定义 asType方法
+
+class Identifiable {
+    String name
+}
+
+import groovy.lang.Closure
+import java.util.Map 
+class MapUser {
+   Long id
+   String name
+
+   def asType(Class target){
+       if ( target == Identifiable ){
+           return new Identifiable(name:name)
+       }else{
+           return null
+       }
+   }
+
+   def call(){
+       id += 1
+   }
+
+   def call(final Closure closure){
+     closure this
+   }
+
+   def call(final Map data){
+     id = data.get('id')
+     name = data.get('name')
+     this
+   }
+    
+   def plus(int x){
+     id + x
+   }
+
+   String toString(){
+      [id:id,name:"${name}"]
+   }
+}
+
+def u = new MapUser(id:1,name:"li")
+def p = u  as Identifiable
+assert p instanceof Identifiable
+
+
+def user3 = new MapUser(id: 1)
+assert user3.call() == 2 
+assert user3() == 3
+
+
+//这里传入闭包为 + 3 此时需要再类型 重载+ plus方法
+assert user3{
+  it+3
+} == 6
+
+//这里调用toString方法显示
+assert user3([id:4,name:"hello"]).id == 4
+
+//操作符 重载 
 class Bnu {
     int size
     Bnu(int size){
@@ -398,3 +430,18 @@ class Bnu {
 def bnu1 = new Bnu(1)
 def bnu2 = new Bnu(2)
 println(( bnu1 + bnu2 ).size)
+
+/**
+  常用操作符重载
+  +   plus      a[b] / a[b]= c   getAt / putAt
+  -   minus     a in b           isCase
+  *   multiply  <<  /  >>        leftShift / rightShift
+  /   div       >>>              rightShiftUnsigned            
+  %   mod       ++   / --        next  /  previous
+  **  power     +a / -a / ~a     positive  /  negative  / butwiseNegate 
+  |   or        
+  &   and 
+  ^   xor
+  as  asType 
+  a() call  
+*/
