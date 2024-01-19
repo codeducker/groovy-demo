@@ -1,20 +1,47 @@
-//import static java.lang.String.format
-//import static java.util.Calendar.getInstance as now
-//import static java.math.BigInteger.probablePrime as d
-//import static java.math.BigInteger.probablePrime as t
-//import static java.lang.Math.*
-//import static java.lang.Long.*
-//import java.util.Date as SqlDate
-//
-//class SomeClass {
-//
-//    String format(Integer i) {
-//        i.toString()
-//    }
-//
-//    static void main(String[] args) {
-//        assert format('String') == 'String'
-//        assert new SomeClass().format(Integer.valueOf(1)) == '1'
+package com.loern.groovy
+
+class Foo {
+  def call(){
+   println "Foo initial..."
+   this
+  }
+}
+
+def foo = new com.loern.groovy.Foo()
+
+foo()
+
+// Java默认导入包 groovy.lang.* / groovy.util.*  / java.math.BigInteger / java.math.Bigdecimal 
+
+
+//静态引入
+import static java.lang.Boolean.FALSE 
+
+assert !FALSE 
+
+//引入别名
+import static java.lang.System.out as out 
+out.println("static alisa")
+
+import static java.lang.String.format
+
+import java.util.Date as SqlDate
+
+class SomeClass {
+
+   String format(Integer i) {
+       i.toString()
+   }
+   def talk(){
+    assert format('String') == 'String'
+    assert this.format(Integer.valueOf(1)) == '1'
+   }
+}
+
+new SomeClass().talk()
+def sqlDate = new SqlDate(1000)
+println sqlDate
+
 ////        def time = t("")
 ////        add(1,1)
 ////        def t = from("2023-06-05 00:00:00")
@@ -26,9 +53,9 @@
 //        parseLong("1")
 //        t(11,new Random())
 //        SqlDate date = new SqlDate(1000)
-//    }
-//}
-//
+   // }
+// }
+
 //class Foo {
 //    static int i
 //}
