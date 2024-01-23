@@ -140,27 +140,39 @@ def address = new Address(street:'yunxinlu',town:'field')
 assert address.toString() == 'Address(field)'
 
 //使用自定义处理器来处理注解属性
-import org.codehaus.groovy.transform.*
-import org.codehaus.groovy.ast.*
-import org.codehaus.groovy.control.*
+import groovy.transform.CompileStatic
 
+import groovy.transform.TypeCheckingMode
+import org.codehaus.groovy.ast.AnnotatedNode
+import org.codehaus.groovy.ast.AnnotationNode
+import org.codehaus.groovy.control.SourceUnit
+import org.codehaus.groovy.transform.AnnotationCollectorTransform
+
+@CompileStatic(TypeCheckingMode.SKIP)
 class SimpleProcessor extends AnnotationCollectorTransform{
-  public List<AnnotationNode> visit(AnnotationNode collector,
-    AnnotationNode aliasAnnotationUsage,AnnotationNode aliasAnnotated,SourceUnit source){
-    def attrs = aliasAnnotationUsage.getMembers()
-    println attrs
-    def dontUse = attrs.get('dontUse')
-    attrs.remove(dontUse)
-    if (dontUse){
-      aliasAnnotationUsage.addMember("excludes",dontUse)
+    public List<AnnotationNode> visit(AnnotationNode collector, AnnotationNode aliasAnnotationUsage,
+                                      AnnotatedNode aliasAnnotated, SourceUnit source) {
+        def members = aliasAnnotationUsage.getMembers()
+        def dontUse = members.get("dontUse")
+        members.remove("dontUse")
+        if(dontUse){
+            aliasAnnotationUsage.addMember("excludes",dontUse)
+        }
+        super.visit(collector,aliasAnnotationUsage,aliasAnnotated,source)
     }
-    super.visit(collector,aliasAnnotationUsage,aliasAnnotated,source)
-  }
-} 
+}
+
+new GroovyShell(this.class.classLoader).evaluate '''
+
+import java.lang.annotation.Documented
+import java.lang.annotation.ElementType
+import java.lang.annotation.Target
+import groovy.transform.EqualsAndHashCode
+import groovy.transform.ToString
+import groovy.transform.AnnotationCollector
 
 @AnnotationCollector(value=[EqualsAndHashCode,ToString],processor = 'SimpleProcessor')
-@interface SimpleProcessorInter {
-  String dontUse() default ''
+@interface SimpleProcessorInter { 
 }
 
 @SimpleProcessorInter(dontUse='username')
@@ -169,26 +181,58 @@ class ProUser{
   int age 
 }
 
+def user = new ProUser(username: "lucky",age:18)
+assert user.toString() == 'ProUser(18)'
+'''
+
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Koo {
+  String value() default ''
+}
+
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Poo {
+  String value() default ''
+}
+
+@Poo
+@Koo
+@AnnotationCollector 
+public @interface Jko {
+
+}
+
+@Koo("a")
+@Poo("b")
+class Blob {
+
+}
+
+assert Blob.getAnnotation(Poo).value() == 'b'
+assert Blob.getAnnotation(Koo).value() == 'a'
+
+@Jko('a')
+class Job {
+
+}
+
+assert Job.getAnnotation(Poo).value() == 'a'
+assert Job.getAnnotation(Koo).value() == 'a'
 
 
 
 
-// new GroovyShell(this.class.classLoader).evaluate '''
-  // import groovy.transform.*
-  // @AnnotationCollector(value = [EqualsAndHashCode,ToString],processor='SimpleProcessor')
-  // @interface SimplePro {
-    // String dontUse() default ''
-  // }
 
-  // @SimplePro(dontUse = 'username')
-  // class User{
-    // String username
-    // int age
-  // }
 
-  // def user = new User(username:"lucky",age:20)
-  // assert user.toString() == 'User(20)'
-// '''
+
+
+
+
+
+
+
+
+
 
 
 
