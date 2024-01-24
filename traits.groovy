@@ -514,4 +514,4 @@ final class FooBoo implements FooBooTrait {
 @Sealed(permittedSubclasses=FooBoo)
 trait FooBooTrait {}
 
-
+//trait 不支持成员属性 自增 / 自减
