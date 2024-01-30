@@ -137,6 +137,6 @@ sealed interface Tree<T> {}
   Tree<T> left ,right
 }
 println Node.class.getDeclaredConstructors()*.toString()
-// def bp = new Node<Integer>(0,Empty.instance,Empty.instance)
+def bp = new Node<Integer>(0,Empty.instance,Empty.instance)
 
-// Tree<Integer> tree = new Node<Integer>(42,new Node<Integer >(0,Empty.instance,Empty.instance),Empty.instance)
+Tree<Integer> tree = new Node<Integer>(42,new Node<Integer >(0,Empty.instance,Empty.instance),Empty.instance)
