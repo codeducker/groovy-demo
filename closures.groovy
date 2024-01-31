@@ -125,3 +125,78 @@ assert upperCaseName() == "JACK"
 upperCaseName.delegate = to
 assert upperCaseName() == "LUCY"
 
+def clpp = {name.toUpperCase()}
+clpp.delegate = po 
+assert clpp() == "JACK"
+import static groovy.test.GroovyAssert.shouldFail
+class Test {
+  def x = 30
+  def y = 40
+  //这里是 默认策略 Closure.OWNER_FIRST
+  void run(){
+    def data = [x:10,y:20]
+    def clp = {y = x+y }
+    clp.delegate = data 
+    clp()
+    assert x == 30
+    assert y == 70
+    assert data == [x:10, y:20]
+    assert clp.owner == this
+  }
+
+  //这里设置策略为 Closure.DELEGATE_FIRST
+  void run2(){
+    def data = [x:10,y:20]
+    def clp = {y = x+y }
+    clp.delegate = data
+    clp.resolveStrategy = Closure.DELEGATE_FIRST
+    clp()
+    assert x == 30
+    assert y == 40
+    assert data == [x:10, y:30]
+    assert clp.owner == this
+    assert clp.delegate == data
+  }
+
+  //这里设置为 Closure.OWNER_ONLY
+  void run3(){
+    def data =[x:10,y:20,z:30]
+    def clp = {y = x+y+z}
+    clp.delegate = data 
+    clp.resolveStrategy = Closure.OWNER_ONLY 
+    shouldFail(groovy.lang.GroovyRuntimeException){
+      clp()
+      println x
+      println y
+      assert y == 40 //这里代理为 实例本身 因为未提供z所以会报错
+      println data
+    }
+  }
+
+  def c = 40
+  //这里设置为 Closure.DELEGATE_ONLY
+  void run4(){
+    def data = [x:10,y:20]
+    def clp = {y = x+y+c}
+    clp.delegate = data 
+    clp.resolveStrategy = Closure.DELEGATE_ONLY
+    shouldFail(groovy.lang.GroovyRuntimeException){
+      clp() //此时无法从data中获取到c的值.
+      println x 
+      println y
+      println data
+    }
+  }
+}
+
+def t = new Test()
+// t.run()
+// t.run2()
+// t.run3()
+t.run4()
+//闭包解决策略
+//Closure.OWNER_FIRST
+//Closure.DELEGATE_FIRST
+//Closure.OWNER_ONLY
+//Closure.DELEGATE_ONLY
+//Closure.TO_SELF
