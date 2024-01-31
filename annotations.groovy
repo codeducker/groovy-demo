@@ -42,7 +42,7 @@ class Runner {
            if (Modifier.isPublic(m.modifiers) && m.parameterTypes.length == 0) {
                def onlyIf = m.getAnnotation(OnlyIf)
                if (onlyIf) {
-                   println onlyIf.value()
+                   println onlyIf.value().class
                    Closure cl = onlyIf.value().newInstance(tasks,tasks)
                    cl.delegate = params
                    if (cl()) {
