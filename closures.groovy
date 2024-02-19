@@ -249,4 +249,51 @@ assert gso == 'Name: Lucy'
 def nCopies = { int n, String str -> str*n }    
 def twice = nCopies.curry(2)                    
 assert twice('bla') == 'blabla'                 
-assert twice('bla') == nCopies(2, 'bla')  
+assert twice('bla') == nCopies(2, 'bla') 
+
+def blah = nCopies.rcurry('bla')
+assert blah(2) == 'blabla'
+assert blah(2) == nCopies(2,'bla')
+
+def volume = {double x ,double y ,double z -> 1 * x + 2 * y +3*z}
+def fixedY = volume.ncurry(1,2d)
+assert fixedY(1,3) == volume(1,2,3)
+
+def fixedYZ = volume.ncurry(1,3,4)
+assert fixedYZ(5) == volume(5,3,4)
+
+def fib 
+fib = {long n -> n <2 ? n : fib(n-1)+fib(n-2)}
+println fib(25)
+
+fib = {long y -> y < 2 ? y : fib(y-1) + fib(y-2)}.memoize()
+println fib(25)
+
+//缓存优化设置
+//memoizeAtMost 最多n值
+//memoizeAtLeast 最少n值
+//memoizeBetween 介于n 和 m 之间
+
+def plus2 = {it +2}
+def time3 = {it *3}
+def time3plus2 = plus2 << time3 
+assert time3plus2(3) == 11
+assert time3plus2(4) == plus2(time3(4))
+
+def plus2time3 = time3 << plus2 
+assert plus2time3(4) == 18
+assert plus2time3(5) == time3(plus2(5))
+
+assert time3plus2(5) == (time3 >> plus2)(5)
+
+def factorial
+factorial = { int n, def accu = 1G ->
+    if (n < 2) return accu
+    //使用trampoline 进行弹性控制
+    factorial.trampoline(n - 1, n * accu)
+}
+factorial = factorial.trampoline()
+
+println factorial(1) //输出：1
+println factorial(3)  // 输出：6
+println factorial(10) // 输出 3628800 
