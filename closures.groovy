@@ -296,4 +296,31 @@ factorial = factorial.trampoline()
 
 println factorial(1) //输出：1
 println factorial(3)  // 输出：6
-println factorial(10) // 输出 3628800 
+println factorial(10) // 输出 3628800
+
+//创建一个接口对象
+interface Predicate<T> {
+    boolean accept(T obj)
+}
+//创建一个单一抽象方法类
+abstract class Greeter {
+    abstract String getName()
+    void greet() {
+        println "Hello, $name"
+    }
+}
+
+Predicate filter = { it.contains 'G' } as Predicate
+assert filter.accept('Groovy') == true
+
+Greeter greeter = { 'Groovy' } as Greeter
+greeter.greet()
+
+interface FooBar{
+  int foo()
+  void bar()
+}
+//此时接口内所有方法都使用 闭包 实现
+def impl = {println 'ok'; 123 }  as FooBar
+assert impl.foo() == 123 
+impl.bar()
