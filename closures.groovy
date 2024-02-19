@@ -230,3 +230,23 @@ def xx1 = "x=${->xx}"
 assert xx1 == "x=1"
 xx = 2 
 assert xx1 == "x=2"
+
+
+class Cert{
+  String name 
+  String toString() {name}
+}
+def cr1 = new Cert(name:"luck")
+def cr2 = new Cert(name:"back")
+def clso = cr1         
+def gso = "Name: ${clso}"                   
+assert gso == 'Name: luck'                
+clso = cr2                                
+assert gso == 'Name: luck'                
+cr1.name = 'Lucy'                       
+assert gso == 'Name: Lucy'    
+
+def nCopies = { int n, String str -> str*n }    
+def twice = nCopies.curry(2)                    
+assert twice('bla') == 'blabla'                 
+assert twice('bla') == nCopies(2, 'bla')  
