@@ -200,3 +200,33 @@ t.run4()
 //Closure.OWNER_ONLY
 //Closure.DELEGATE_ONLY
 //Closure.TO_SELF
+
+class PersonAc {
+  String name
+  int age 
+  def fetchAge = {age}
+}
+
+class ThingAc {
+  String name
+  def propertyMissing(String name) {-1}
+}
+def pp = new PersonAc(name:"luck",age:12)
+def tt = new ThingAc(name:"lickThing")
+def clo = pp.fetchAge
+clo.resolveStrategy=Closure.DELEGATE_ONLY
+clo.delegate = pp 
+assert clo() == 12 
+clo.delegate = tt 
+assert clo() == -1
+def xx = 1
+def gs = "x=${xx}"
+assert gs == "x=1"
+//此时这里的${xx}只是个表达式,当GString创建时该值就已经确定
+// xx = 2 
+// assert gs == "x=2"
+
+def xx1 = "x=${->xx}"
+assert xx1 == "x=1"
+xx = 2 
+assert xx1 == "x=2"
