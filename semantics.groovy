@@ -168,3 +168,357 @@ for(xu in 0..10){
 
 void aMthodFoo() {println "This is aMethodFoo."}
 assert ['aMthodFoo'] == this.class.methods.name.grep(~/.*Foo/)
+
+import groovy.xml.XmlSlurper
+def xmlText = """
+              | <root>
+              |   <level>
+              |      <sublevel id='1'>
+              |        <keyVal>
+              |          <key>mykey</key>
+              |          <value>value 123</value>
+              |        </keyVal>
+              |      </sublevel>
+              |      <sublevel id='2'>
+              |        <keyVal>
+              |          <key>anotherKey</key>
+              |          <value>42</value>
+              |        </keyVal>
+              |        <keyVal>
+              |          <key>mykey</key>
+              |          <value>fizzbuzz</value>
+              |        </keyVal>
+              |      </sublevel>
+              |   </level>
+              | </root>
+              """
+def root = new XmlSlurper().parseText(xmlText.stripMargin())
+assert root.level.size() == 1 
+assert root.level.sublevel.size() == 2 
+assert root.level.sublevel.findAll { it.@id == 1 }.size() == 1 
+assert root.level.sublevel[1].keyVal[0].key.text() == 'anotherKey'
+
+interface Predicate<T>{
+  boolean accept(T t);
+}
+
+boolean doFilter(String s) { s.contains('G')}
+Predicate predicate = this.&doFilter
+assert predicate.accept('Groovy') == true
+
+
+abstract class Greater{
+  abstract String getName()
+
+  void greet(){
+    println "Hello $name"
+  }
+}
+
+Greater greater = GroovySystem.&getVersion 
+greater.greet()
+
+public <T> List<T> filter(List<T> sources,Predicate<T> predicate){
+  sources.findAll { predicate.accept(it) }
+}
+assert filter(['Java','Groovy'], {it.contains('G')} as Predicate) == ['Groovy']
+
+
+class FooBar{
+  int foo() {1}
+  void bar() {println 'bar'}
+}
+def impl = {println 'ok'; 123} as FooBar 
+assert impl.foo() == 123 
+impl.bar()
+
+
+def mapData 
+mapData = [
+  i:10,
+  hasNext: { mapData.i > 10} ,
+  next: { mapData.i --},
+]
+import java.util.function.Consumer
+def itr = mapData as Iterator
+itr.forEachRemaining({ println it} as Consumer)
+
+interface X {
+  void f()
+  void g(int n )
+  void h(String s ,int n )
+}
+xre = [f: {println "f called"} , methodMissing: {(String name,args) ->println "method missing"}] as X 
+xre.f()
+// xre.g(1)
+// xre.g()
+// xre.h("hi",5)
+
+enum State {
+  up ,
+  down
+}
+
+def val = "up"
+State st = "${val}"
+assert st == State.up
+
+// State s = "not a state enum"
+State switchState(State st){
+  switch(st){
+    case "up" :
+        return State.down
+    case "down": 
+        return "up"
+  }
+}
+println switchState(State.down)
+
+Class clazz = Class.forName('Greater')
+
+// {println "hello"} as clazz
+
+gtt = { println "hello"}.asType(clazz)
+gtt.greet()
+
+class Color {
+  String name
+  boolean asBoolean(){
+    name == "green" ? true :false
+  }
+}
+assert new Color(name:'green')
+
+class Pers {
+  String lastName
+  String firstName
+}
+def px = new Pers (firstName: "err",lastName:"juh")
+px.metaClass.getFormattedName = { -> "$delegate.firstName $delegate.lastName" }
+println px.getFormattedName()
+assert px.formattedName == "err juh"
+
+def shell = new GroovyShell()
+shell.evaluate '''
+  class SentenceBuilder {
+   
+    StringBuilder sb = new StringBuilder()
+    
+    def methodMissing(String name, args) {
+      if (sb) sb.append(' ')
+      sb.append(name)
+      this 
+    }
+
+    def propertyMissing(String name) {
+       if (sb) sb.append(' ')
+       sb.append(name)
+       this
+    }
+    
+    String toString() { sb }
+  }
+
+  import groovy.transform.*
+
+  //这个注解可以放在类或者方法上面
+  @TypeChecked
+  class Calculator {
+    int sum(int x , int y ) { x+ y }
+  }
+
+  @TypeChecked
+  class GreetingService {
+    String greeting(){
+     doGreet()
+    }
+  
+    @TypeChecked(TypeCheckingMode.SKIP)
+    private String doGreet(){
+      def b = new SentenceBuilder()
+      b.Hello.my.name.is.John
+      b
+    }
+  }
+
+  def s = new GreetingService()
+  assert s.greeting() == "Hello my name is John"
+'''
+@groovy.transform.TupleConstructor
+class Sofa {
+  String name
+  String email
+}
+
+Sofa sofa = new Sofa()
+sofa = new Sofa('fili','flili@163.com')
+sofa = ['mark','mark@163.com']
+sofa = [name:"july",email:'july@qq.com']
+// sofa = [name:'jack',email:'jack@qq.com',age:13]//此时会报错显示 未知属性 age
+
+//加上如下注解,则在编译时就检查是否存在printline方法
+// @groovy.transform.TypeChecked 
+class MyService {
+  void something(){
+    printline "My Service"
+  }
+}
+def service = new MyService()
+// service.something()
+
+class Duck {
+  void quark(){
+    println "Quark!"
+  }
+}
+
+class QuarkBird {
+  void quark(){
+    println "Quark!"
+  }
+}
+
+// @groovy.transform.TypeChecked
+void accept(quarker){
+  quarker.quark()
+}
+accept(new Duck())
+
+interface Gre { void g()}
+interface Hre { void h()}
+
+class Ag implements Gre,Hre {
+  void g() { println "Ag G" }
+  void h() { println "Ag H" }
+}
+
+class Bg implements Gre,Hre {
+  void g() { println "Bg G" }
+  void h() { println "Bg H" }
+}
+
+def list = [new Ag() , new Bg()]
+list.each {
+  it.g()
+  it.h()
+  // it.exit()
+}
+
+@groovy.transform.TypeChecked
+void flowTyping(){
+  def o = "foo"
+  o = o.toUpperCase()
+  o = 9d 
+  o = Math.sqrt(o)
+
+  List lista = ['a','b','c']
+  lista = lista*.toUpperCase()//此时指定类型为List<String>
+  // lista = 'foo' //此时不能将String赋值给List类型
+
+
+//此时会报错因为lista定义为List<String>类型
+  // lista.add(1)
+
+  List<? extends Serializable> listx = []
+  listx.addAll(['a','b','c'])
+  listx.add(1)
+
+}
+//这里和Java的区别,此时会根据运行时的变量类型,从而调用对应类型的方法
+int compute(String st) { st.length()}
+String compute(Object st) { "Nope" }
+Object o = "lihua"
+def result1 =  compute(o)
+println result1
+
+
+class Top {
+  void top(){}
+}
+class Buttom extends Top {
+  void buttom(){}
+}
+// def oo = new Object()
+// if(oo instanceof Top){
+  // oo = new Top()
+// }else{
+  // oo == new Buttom()
+// }
+// oo.top()
+// oo.buttom()
+
+// @groovy.transform.TypeChecked
+class More {
+  int age
+  def compute () {'Some compute'}
+  def computeFully(){
+    compute().toUpperCase()
+  }
+}
+@groovy.transform.TypeChecked
+class OneMore extends More{
+  def compute() {123}
+}
+
+void inviteIf(More more,Closure<Boolean> predicate){
+  if(predicate.call(more)){
+    println "invite ..."
+  }
+}
+@groovy.transform.TypeChecked
+void failCompilation() {
+  More more = new More()
+  inviteIf(more) {
+   More it->it.age >= 18 
+  }
+}
+
+import groovy.transform.stc.FirstParam
+void inviteIf2(More more, @groovy.transform.stc.ClosureParams(FirstParam)Closure<Boolean> predicate){
+  if(predicate.call(more)){
+    println "invite2..."
+  }
+}
+
+@groovy.transform.TypeChecked
+void failCompilation2(){
+  More more = new More()
+  inviteIf2(more) {
+    it.age >= 18
+  }
+}
+
+import groovy.transform.stc.FirstParam
+import groovy.transform.stc.ClosureParams
+public <T> void doSomeThing(List<T> strings,@ClosureParams(FirstParam.FirstGenericType) Closure c) {
+  strings.each {
+    c(it)
+  }
+}
+doSomeThing(['foo','bar']) { println it.toUpperCase()}
+doSomeThing([1,2,3]) { println it *2}
+
+import groovy.transform.stc.SimpleType
+
+public <T> void doSomeThing2(@ClosureParams(value=SimpleType,options=['java.lang.String','int'])
+Closure c){
+  c('foo',3)
+}
+doSomeThing2 {
+  str,len -> assert str.length() == len 
+}
+import groovy.transform.stc.MapEntryOrKeyValue
+public <K,V> void doSomeThing3(Map<K,V> map, @ClosureParams(MapEntryOrKeyValue)Closure c){
+  c()
+}
+
+import groovy.transform.stc.FromAbstractTypeMethods
+abstract class Too {
+  abstract void firstSignauture(int x,int y)
+  abstract void secondSignature(String str)
+}
+void doSomeThing4(@ClosureParams(value =FromAbstractTypeMethods,options=['Too'])Closure c){
+  //
+}
+doSomeThing4 {aac,bac->aac+bac}
+doSomeThing4(s->s.toUpperCase())
