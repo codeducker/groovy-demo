@@ -324,3 +324,96 @@ interface FooBar{
 def impl = {println 'ok'; 123 }  as FooBar
 assert impl.foo() == 123 
 impl.bar()
+
+c= {x,y,z-> getMaximumNumberOfParameters() }  
+assert c.getMaximumNumberOfParameters() == 3  
+assert c(4,5,6) == 3
+
+
+//当闭包作为最后一位参数时,可以省略直接放至参数后
+def runTwice = { a, c -> c(c(a)) }  
+assert runTwice( 5, {it * 3} ) == 45 //usual syntax  
+assert runTwice( 5 ){it * 3} == 45
+
+
+interface MustClosed {
+  def close()
+}
+
+def static safeUse(MustClosed mc ,action){
+  try{
+    action(mc)
+  }catch(Exception e){
+    e.printStackTrace()
+  }finally{
+    mc.close()
+    println "${mc.getClass().typeName} has been closed"
+  }
+}
+
+MustClosed re  =  [
+  close: {
+    println "doing closing..."
+  }
+] as MustClosed
+
+
+def action  = {
+  MustClosed r ->
+    println "use resource r to do something..."
+}
+
+safeUse(re) {action(re)}
+
+import java.io.*
+fo = new FileOutputStream(new File("LICENSE.md"))
+safeUse(fo as MustClosed) {
+  r->r.write("Groovy Demo License !!!".bytes)
+}
+//函数式编程 柯里化 目的  缓存参数 / 延迟执行闭包
+
+
+class _Example_{
+    def out = {
+        // 这是相对而言的内部闭包。
+        def inner = {}
+
+        //------test of thisObject, owner, delegate----------//
+        println out.thisObject.getClass().name		//_Example_
+        println out.thisObject.hashCode()           // == inner.thisObject.hashCode
+        println out.owner.getClass().name			//_Example_
+        println out.delegate.getClass().name		//_Example_
+
+        println inner.thisObject.getClass().name    //_Example_
+        println inner.thisObject.hashCode()         // == out.thisObject.hashCode
+        println inner.owner.getClass().name         //_Example_$_closure1 (指外部闭包被编译的内部类)
+        println inner.delegate.getClass().name      //_Example_$_closure1 (指外部闭包被编译的内部类)
+    }
+}
+
+new _Example_().out()
+
+
+
+class _Proxy_{
+    def func1 = { println "this [func1] is from the instance of Class: _Proxy_" }
+    def func2 = { println "this [func2] is still from the instance of Class: _Proxy_" }
+}
+//优先从 thisObject 和 owner查询 ,查询不到则到delegate查找,再查询不到直接抛出异常
+class _Example1_{
+//
+    def func1 = { println "this [func1] is from the instance of Class:_Example_."}
+    def out = {
+        def func2 = { println "this [func2] is from the instance of closure:out"}
+        def inner = {
+            func1()
+            func2()
+        }
+
+//         inner.delegate = new _Proxy_()
+
+            new _Proxy_().with inner //此时会优先从 delegate < thisObject/owner 查询
+//         inner()
+    }
+}
+new _Example1_().out()

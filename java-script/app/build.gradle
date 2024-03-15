@@ -1,0 +1,18 @@
+plugins {
+    id "application"
+}
+repositories {
+    mavenCentral()
+}
+dependencies {
+    implementation group: 'org.apache.groovy', name: 'groovy-all', version: '4.0.20'
+    implementation group: 'com.google.guava', name: 'guava', version: '33.1.0-jre'
+}
+
+application {
+    mainClass = "com.loern.groovy.Main"
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+}
