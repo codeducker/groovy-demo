@@ -408,6 +408,12 @@ class _Example1_{
         def inner = {
             func1()
             func2()
+           
+          
+         
+        
+       
+      
         }
 
 //         inner.delegate = new _Proxy_()

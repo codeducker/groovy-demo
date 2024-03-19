@@ -197,7 +197,7 @@ assert fooArgs(2,3) == 2
 // assert fooArgs(null) == null //这边会空指针异常
 
 def method(Object o1, Object o2) { 'o/o' }
-def method(Integer i, String  s) { 'i/s' }
+def method(Integer i, String  s) { 'i/s'}
 def method(String  s, Integer i) { 's/i' }
 
 assert method('foo' ,42) == 's/i'

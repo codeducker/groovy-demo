@@ -1,19 +1,33 @@
 package com.loern.groovy;
 
-import groovy.lang.GroovyClassLoader;
-import groovy.lang.GroovyObject;
-import groovy.lang.GroovyShell;
+import groovy.lang.*;
+import groovy.util.GroovyScriptEngine;
 import org.codehaus.groovy.control.CompilerConfiguration;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 
 public class Main{
     public static void main(String[] args){
 //        doByGroovyShell();
-        doByGroovyClassLoader();
+//        doByGroovyClassLoader();
+        doByGroovyScriptEng();
     }
 
+
+    public static void doByGroovyScriptEng(){
+        try {
+            GroovyScriptEngine scriptEngine = new GroovyScriptEngine("/Users/loern/Documents/github/groovy-demo/java-script/app/build/resources/main/");
+            Binding binding = new Binding();
+            binding.setVariable("args",new String[]{"Hello from GroovyScriptEngine"});
+            Script script = scriptEngine.createScript("build.groovy", binding);
+            Object run = script.run();
+            System.out.println(run);
+        } catch (Exception e) {
+           e.printStackTrace();
+        }
+    }
 
     public static void doByGroovyClassLoader(){
         CompilerConfiguration compilerConfiguration = new CompilerConfiguration();

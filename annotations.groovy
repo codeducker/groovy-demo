@@ -218,3 +218,39 @@ class Job {
 
 assert Job.getAnnotation(Poo).value() == 'a'
 assert Job.getAnnotation(Koo).value() == 'a'
+
+//
+// @groovy.transform.TypeChecked
+// @TypeChecked
+// class CA {
+//
+//   def compute()  {'something'}
+//
+//   def computeFully(){
+//     compute().toUpperCase()
+//   }
+// }
+// @groovy.transform.TypeChecked
+// @TypeChecked
+// class BA extends CA {
+//   def compute(){ 123 }
+// }
+
+class ComputerA {
+    int compute(String str) {
+        str.length()
+    }
+    String compute(int x) {
+        String.valueOf(x)
+    }
+}
+
+@groovy.transform.CompileStatic
+void test() {
+    def computer = new ComputerA()
+    computer.with {
+        assert compute(compute('foobar')) =='6'
+    }
+}
+ComputerA.metaClass.compute = { String str -> new Date() }
+println test()
